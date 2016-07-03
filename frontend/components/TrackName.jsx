@@ -1,0 +1,55 @@
+var React = require('react');
+var TrackActions = require('../actions/track_actions');
+
+
+var TrackName = React.createClass({
+  getInitialState: function() {
+    return {
+      isInputFocused: false,
+      name: "",
+      isSaved: false
+    }
+  },
+  render: function() {
+    var trackNameDisplayClass = this.state.isInputFocused ?
+      "hidden" : "track-name-display";
+    var buttonClass = this.state.isSaved ? "hidden" : "save-name-btn";
+
+    return (
+      <div className="track-name-container">
+        <input ref="nameInput" onInput={this.onInput} type="text"
+          className="track-name-input" value={this.state.name} />
+
+        <span onClick={this.onClickName} className={trackNameDisplayClass}>
+          {this.state.name}
+        </span>
+
+        <button onClick={this.onClickSave} className={buttonClass}>
+          Save Name
+        </button>
+      </div>
+    );
+  },
+  onInput: function(e) {
+    var newValue = this.refs.nameInput.value;
+    var isSaved = newValue === this.props.Track.name;
+
+    this.setState({
+      name: newValue,
+      isSaved: isSaved
+    });
+  },
+  onClickName: function() {
+    this.setState({ isInputFocused: false });
+  },
+  onClickSave: function() {
+    if (this.state.isSaved) return;
+
+    this.props.Track.name = this.state.name;
+
+    this.setState({ isSaved: true });
+  }
+});
+
+
+module.exports = TrackName;
