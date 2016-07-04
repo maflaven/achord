@@ -10,7 +10,7 @@ var tracks = {};
 
 
 var addTrack = function(track) {
-  if (tracks[track.name]) {
+  if (TrackStore.hasTrack(track.name)) {
     throw new Error('Invalid track. "' + track.name + '" already exists.');
     return;
   }
@@ -21,7 +21,7 @@ var addTrack = function(track) {
 
 
 var removeTrack = function(trackName) {
-  if (!tracks[trackName]) {
+  if (!TrackStore.hasTrack(trackName)) {
     throw new Error('Invalid track. "' + track.name + '" doesn\'t exist.');
     return;
   }
@@ -31,8 +31,31 @@ var removeTrack = function(trackName) {
 };
 
 
+var updateTrackName = function(oldName, newName) {
+  if (!TrackStore.hasTrack(oldName)) {
+    throw new Error('Invalid track. "' + track.name + '" doesn\'t exist.');
+    return false;
+  }
+
+  var track = {
+    nmme: newName,
+    roll: tracks[oldName].slice()
+  };
+
+  delete tracks[oldName];
+
+  addTrack(track);
+  TrackStore.__emitChange();
+};
+
+
+TrackStore.hasTrack = function(trackName) {
+  return tracks.hasOwnProperty(trackName);
+};
+
+
 TrackStore.getTrack = function(trackName) {
-  if (!tracks[trackName]) {
+  if (!TrackStore.hasTrack(trackName)) {
     throw new Error('Invalid track. "' + track.name + '" doesn\'t exist.');
     return false;
   }
@@ -41,12 +64,12 @@ TrackStore.getTrack = function(trackName) {
     name: trackName,
     roll: tracks[trackName].slice()
   };
-}
+};
 
 
 TrackStore.getAllTracks = function() {
-  return Object.keys(tracks).map(this.getTrack);
-}
+  return Object.keys(tracks).map(TrackStore.getTrack);
+};
 
 
 TrackStore.__onDispatch = function(payload) {
@@ -56,6 +79,9 @@ TrackStore.__onDispatch = function(payload) {
       break;
     case "TRACK_REMOVE":
       removeTrack(payload.trackName);
+      break;
+    case "TRACK_NAME_UPDATE":
+      updateTrackName(payload.oldName, payload.newName);
       break;
   }
 };

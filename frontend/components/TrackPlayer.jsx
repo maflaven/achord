@@ -29,7 +29,8 @@ var TrackPlayer = React.createClass({
           Stop Playback
         </button>
 
-        <button onClick={this.handleClickDelete} className="delete-btn">
+        <button onClick={this.handleClickDelete} className="delete-btn"
+          disabled={!this.props.isTrackSaved}>
           Delete
         </button>
 

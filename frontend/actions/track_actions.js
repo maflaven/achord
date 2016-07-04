@@ -12,5 +12,12 @@ module.exports = {
       actionType: "TRACK_REMOVE",
       trackName: trackName
     });
+  },
+  updateTrackName: function(oldName, newName) {
+    dispatcher.dispatch({
+      actionType: "TRACK_NAME_UPDATE",
+      oldName: oldName,
+      newName: newName
+    });
   }
 };

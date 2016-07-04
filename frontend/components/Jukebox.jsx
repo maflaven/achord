@@ -26,7 +26,7 @@ var Jukebox = React.createClass({
   generateTrackPlayers: function() {
     return this.state.tracks.map( function(track, i) {
       console.log(track);
-      return <TrackPlayer key={i} Track={track} />
+      return <TrackPlayer key={i} Track={track} isTrackSaved="true" />
     });
   },
   render: function() {

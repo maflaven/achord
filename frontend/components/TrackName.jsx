@@ -7,18 +7,20 @@ var TrackName = React.createClass({
   getInitialState: function() {
     return {
       name: "",
-      isSaved: false
+      isSaved: false,
+      isInputFocused: false
     };
   },
   render: function() {
     var trackNameDisplayClass = this.state.isInputFocused ?
       "hidden" : "track-name-display";
-    var buttonClass = this.state.isSaved ? "hidden" : "save-name-btn";
+    var buttonClass = this.state.isSaved && this.state.name.length > 0 ?
+      "hidden" : "save-name-btn";
 
     return (
       <div className="track-name-container">
         <input ref="nameInput" onInput={this.onInput} onFocus={this.disableKeyListeners}
-          type="text" className="track-name-input" onBlur={this.onBlur}
+          type="text" className="track-name-input" onBlur={this.onBlur} hidden={!this.state.isInputFocused}
           value={this.state.name} />
 
         <span onClick={this.onClickName} className={trackNameDisplayClass}>
@@ -47,12 +49,12 @@ var TrackName = React.createClass({
     });
   },
   onClickName: function() {
-    this.setState({ isInputFocused: false });
+    this.setState({ isInputFocused: true });
   },
   onClickSave: function() {
     if (this.state.isSaved) return;
 
-    this.props.Track.name = this.state.name;
+    TrackActions.updateTrackName(this.props.Track.name, this.state.name);
 
     this.setState({ isSaved: true });
   },

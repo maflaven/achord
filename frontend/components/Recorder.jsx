@@ -1,11 +1,14 @@
 var React = require('react');
+var ListenToMixin = require('../mixins/ListenToMixin');
 var KeyStore = require('../stores/KeyStore');
 var Track = require('../util/Track');
 var TrackActions = require('../actions/track_actions');
 var TrackPlayer = require('./TrackPlayer.jsx');
+var TrackStore = require('../stores/TrackStore');
 
 
 var Recorder = React.createClass({
+  mixins: [ListenToMixin],
   getInitialState: function() {
     return {
       isRecording: false,
@@ -21,7 +24,9 @@ var Recorder = React.createClass({
 
     var trackPlayer;
     if (this.state.Track !== null && !this.state.isRecording) {
-      trackPlayer = <TrackPlayer Track={this.state.Track} onTrackDelete={this.onTrackDelete} />;
+      trackPlayer = <TrackPlayer Track={this.state.Track}
+        onTrackDelete={this.onTrackDelete}
+        isTrackSaved={this.state.isTrackSaved} />;
     }
 
     return (

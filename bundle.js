@@ -20329,7 +20329,7 @@
 	var KEYMAP = __webpack_require__(169);
 	var OrganKey = __webpack_require__(170);
 	var Recorder = __webpack_require__(199);
-	var Jukebox = __webpack_require__(204);
+	var Jukebox = __webpack_require__(205);
 	
 	var Organ = React.createClass({
 	  displayName: 'Organ',
@@ -37241,14 +37241,17 @@
 /***/ function(module, exports, __webpack_require__) {
 
 	var React = __webpack_require__(162);
+	var ListenToMixin = __webpack_require__(194);
 	var KeyStore = __webpack_require__(171);
 	var Track = __webpack_require__(200);
 	var TrackActions = __webpack_require__(201);
 	var TrackPlayer = __webpack_require__(202);
+	var TrackStore = __webpack_require__(204);
 	
 	var Recorder = React.createClass({
 	  displayName: 'Recorder',
 	
+	  mixins: [ListenToMixin],
 	  getInitialState: function () {
 	    return {
 	      isRecording: false,
@@ -37263,7 +37266,9 @@
 	
 	    var trackPlayer;
 	    if (this.state.Track !== null && !this.state.isRecording) {
-	      trackPlayer = React.createElement(TrackPlayer, { Track: this.state.Track, onTrackDelete: this.onTrackDelete });
+	      trackPlayer = React.createElement(TrackPlayer, { Track: this.state.Track,
+	        onTrackDelete: this.onTrackDelete,
+	        isTrackSaved: this.state.isTrackSaved });
 	    }
 	
 	    return React.createElement(
@@ -37431,6 +37436,13 @@
 	      actionType: "TRACK_REMOVE",
 	      trackName: trackName
 	    });
+	  },
+	  updateTrackName: function (oldName, newName) {
+	    dispatcher.dispatch({
+	      actionType: "TRACK_NAME_UPDATE",
+	      oldName: oldName,
+	      newName: newName
+	    });
 	  }
 	};
 
@@ -37475,7 +37487,8 @@
 	      ),
 	      React.createElement(
 	        'button',
-	        { onClick: this.handleClickDelete, className: 'delete-btn' },
+	        { onClick: this.handleClickDelete, className: 'delete-btn',
+	          disabled: !this.props.isTrackSaved },
 	        'Delete'
 	      ),
 	      React.createElement(TrackName, { Track: this.props.Track })
@@ -37531,18 +37544,19 @@
 	  getInitialState: function () {
 	    return {
 	      name: "",
-	      isSaved: false
+	      isSaved: false,
+	      isInputFocused: false
 	    };
 	  },
 	  render: function () {
 	    var trackNameDisplayClass = this.state.isInputFocused ? "hidden" : "track-name-display";
-	    var buttonClass = this.state.isSaved ? "hidden" : "save-name-btn";
+	    var buttonClass = this.state.isSaved && this.state.name.length > 0 ? "hidden" : "save-name-btn";
 	
 	    return React.createElement(
 	      'div',
 	      { className: 'track-name-container' },
 	      React.createElement('input', { ref: 'nameInput', onInput: this.onInput, onFocus: this.disableKeyListeners,
-	        type: 'text', className: 'track-name-input', onBlur: this.onBlur,
+	        type: 'text', className: 'track-name-input', onBlur: this.onBlur, hidden: !this.state.isInputFocused,
 	        value: this.state.name }),
 	      React.createElement(
 	        'span',
@@ -37572,12 +37586,12 @@
 	    });
 	  },
 	  onClickName: function () {
-	    this.setState({ isInputFocused: false });
+	    this.setState({ isInputFocused: true });
 	  },
 	  onClickSave: function () {
 	    if (this.state.isSaved) return;
 	
-	    this.props.Track.name = this.state.name;
+	    TrackActions.updateTrackName(this.props.Track.name, this.state.name);
 	
 	    this.setState({ isSaved: true });
 	  },
@@ -37592,10 +37606,95 @@
 /* 204 */
 /***/ function(module, exports, __webpack_require__) {
 
+	var $ = __webpack_require__(172);
+	var Store = __webpack_require__(173).Store;
+	var Dispatcher = __webpack_require__(191);
+	
+	var TrackStore = new Store(Dispatcher);
+	
+	var tracks = {};
+	
+	var addTrack = function (track) {
+	  if (TrackStore.hasTrack(track.name)) {
+	    throw new Error('Invalid track. "' + track.name + '" already exists.');
+	    return;
+	  }
+	
+	  tracks[track.name] = track.roll;
+	  TrackStore.__emitChange();
+	};
+	
+	var removeTrack = function (trackName) {
+	  if (!TrackStore.hasTrack(trackName)) {
+	    throw new Error('Invalid track. "' + track.name + '" doesn\'t exist.');
+	    return;
+	  }
+	
+	  delete tracks[trackName];
+	  TrackStore.__emitChange();
+	};
+	
+	var updateTrackName = function (oldName, newName) {
+	  if (!TrackStore.hasTrack(oldName)) {
+	    throw new Error('Invalid track. "' + track.name + '" doesn\'t exist.');
+	    return false;
+	  }
+	
+	  var track = {
+	    nmme: newName,
+	    roll: tracks[oldName].slice()
+	  };
+	
+	  delete tracks[oldName];
+	
+	  addTrack(track);
+	  TrackStore.__emitChange();
+	};
+	
+	TrackStore.hasTrack = function (trackName) {
+	  return tracks.hasOwnProperty(trackName);
+	};
+	
+	TrackStore.getTrack = function (trackName) {
+	  if (!TrackStore.hasTrack(trackName)) {
+	    throw new Error('Invalid track. "' + track.name + '" doesn\'t exist.');
+	    return false;
+	  }
+	
+	  return {
+	    name: trackName,
+	    roll: tracks[trackName].slice()
+	  };
+	};
+	
+	TrackStore.getAllTracks = function () {
+	  return Object.keys(tracks).map(TrackStore.getTrack);
+	};
+	
+	TrackStore.__onDispatch = function (payload) {
+	  switch (payload.actionType) {
+	    case "TRACK_ADD":
+	      addTrack(payload.track);
+	      break;
+	    case "TRACK_REMOVE":
+	      removeTrack(payload.trackName);
+	      break;
+	    case "TRACK_NAME_UPDATE":
+	      updateTrackName(payload.oldName, payload.newName);
+	      break;
+	  }
+	};
+	
+	module.exports = TrackStore;
+
+/***/ },
+/* 205 */
+/***/ function(module, exports, __webpack_require__) {
+
 	var React = __webpack_require__(162);
 	var ListenToMixin = __webpack_require__(194);
 	var TrackPlayer = __webpack_require__(202);
-	var TrackStore = __webpack_require__(205);
+	var TrackStore = __webpack_require__(204);
 	var Track = __webpack_require__(200);
 	
 	var Jukebox = React.createClass({
@@ -37621,7 +37720,7 @@
 	  generateTrackPlayers: function () {
 	    return this.state.tracks.map(function (track, i) {
 	      console.log(track);
-	      return React.createElement(TrackPlayer, { key: i, Track: track });
+	      return React.createElement(TrackPlayer, { key: i, Track: track, isTrackSaved: 'true' });
 	    });
 	  },
 	  render: function () {
@@ -37634,67 +37733,6 @@
 	});
 	
 	module.exports = Jukebox;
-
-/***/ },
-/* 205 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var $ = __webpack_require__(172);
-	var Store = __webpack_require__(173).Store;
-	var Dispatcher = __webpack_require__(191);
-	
-	var TrackStore = new Store(Dispatcher);
-	
-	var tracks = {};
-	
-	var addTrack = function (track) {
-	  if (tracks[track.name]) {
-	    throw new Error('Invalid track. "' + track.name + '" already exists.');
-	    return;
-	  }
-	
-	  tracks[track.name] = track.roll;
-	  TrackStore.__emitChange();
-	};
-	
-	var removeTrack = function (trackName) {
-	  if (!tracks[trackName]) {
-	    throw new Error('Invalid track. "' + track.name + '" doesn\'t exist.');
-	    return;
-	  }
-	
-	  delete tracks[trackName];
-	  TrackStore.__emitChange();
-	};
-	
-	TrackStore.getTrack = function (trackName) {
-	  if (!tracks[trackName]) {
-	    throw new Error('Invalid track. "' + track.name + '" doesn\'t exist.');
-	    return false;
-	  }
-	
-	  return {
-	    name: trackName,
-	    roll: tracks[trackName].slice()
-	  };
-	};
-	
-	TrackStore.getAllTracks = function () {
-	  return Object.keys(tracks).map(this.getTrack);
-	};
-	
-	TrackStore.__onDispatch = function (payload) {
-	  switch (payload.actionType) {
-	    case "TRACK_ADD":
-	      addTrack(payload.track);
-	      break;
-	    case "TRACK_REMOVE":
-	      removeTrack(payload.trackName);
-	      break;
-	  }
-	};
-	
-	module.exports = TrackStore;
 
 /***/ }
 /******/ ]);
