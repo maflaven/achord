@@ -1,6 +1,6 @@
 var React = require('react');
 var TrackActions = require('../actions/track_actions');
-var TrackName = require('./TrackName.jsx');
+var TrackName = require('./TrackName');
 
 
 var TrackPlayer = React.createClass({
@@ -11,7 +11,9 @@ var TrackPlayer = React.createClass({
     };
   },
   componentDidMount: function() {
-    this.props.Track.bindStopCallback(this.setStopped);
+    if (typeof this.props.Track.bindStopCallback === "function") {
+      this.props.Track.bindStopCallback(this.setStopped);
+    }
   },
   render: function() {
     var playPauseText = this.state.isPlaying ? "Pause Playback" : "Play";

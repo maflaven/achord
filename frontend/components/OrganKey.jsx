@@ -1,9 +1,9 @@
-var React = require('react'),
-    KeyStore = require('../stores/KeyStore'),
-    ListenToMixin = require('../mixins/ListenToMixin'),
-    KeyListener = require('../util/KeyListener');
-    Note = require('../util/Note');
-    TONES = require('../constants/Tones');
+var React = require('react');
+var KeyStore = require('../stores/KeyStore');
+var ListenToMixin = require('../mixins/ListenToMixin');
+var KeyListener = require('../util/KeyListener');
+var Note = require('../util/Note');
+var TONES = require('../constants/Tones');
 
 
 var OrganKey = React.createClass({

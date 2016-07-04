@@ -18,5 +18,15 @@ module.exports = {
       actionType: "KEYS_RESET",
       keysArray: keysArray
     });
+  },
+  listenerPressesDisable: function() {
+    dispatcher.dispatch({
+      actionType: "LISTENER_PRESSES_DISABLE"
+    });
+  },
+  listenerPressesEnable: function() {
+    dispatcher.dispatch({
+      actionType: "LISTENER_PRESSES_ENABLE"
+    });
   }
 };

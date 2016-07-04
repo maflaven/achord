@@ -20329,6 +20329,7 @@
 	var KEYMAP = __webpack_require__(169);
 	var OrganKey = __webpack_require__(170);
 	var Recorder = __webpack_require__(199);
+	var Jukebox = __webpack_require__(204);
 	
 	var Organ = React.createClass({
 	  displayName: 'Organ',
@@ -20349,7 +20350,8 @@
 	        { className: 'keys' },
 	        this.generateKeys()
 	      ),
-	      React.createElement(Recorder, null)
+	      React.createElement(Recorder, null),
+	      React.createElement(Jukebox, null)
 	    );
 	  }
 	});
@@ -20377,12 +20379,12 @@
 /* 170 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var React = __webpack_require__(162),
-	    KeyStore = __webpack_require__(171),
-	    ListenToMixin = __webpack_require__(194),
-	    KeyListener = __webpack_require__(195);
-	Note = __webpack_require__(197);
-	TONES = __webpack_require__(198);
+	var React = __webpack_require__(162);
+	var KeyStore = __webpack_require__(171);
+	var ListenToMixin = __webpack_require__(194);
+	var KeyListener = __webpack_require__(195);
+	var Note = __webpack_require__(197);
+	var TONES = __webpack_require__(198);
 	
 	var OrganKey = React.createClass({
 	  displayName: 'OrganKey',
@@ -20439,9 +20441,14 @@
 	var KeyStore = new Store(Dispatcher);
 	
 	var keysPressed = {};
+	var listenersCanPress = true;
 	
 	KeyStore.pressedKeys = function () {
 	  return $.extend({}, keysPressed);
+	};
+	
+	KeyStore.listenersCanPress = function () {
+	  return listenersCanPress;
 	};
 	
 	var addKey = function (key) {
@@ -20451,6 +20458,16 @@
 	
 	var removeKey = function (key) {
 	  delete keysPressed[key];
+	  KeyStore.__emitChange();
+	};
+	
+	var enableListenerPresses = function () {
+	  listenersCanPress = true;
+	  KeyStore.__emitChange();
+	};
+	
+	var disableListenerPresses = function () {
+	  listenersCanPress = false;
 	  KeyStore.__emitChange();
 	};
 	
@@ -20470,6 +20487,12 @@
 	      break;
 	    case "KEYS_RESET":
 	      resetKeys(payload.keysArray);
+	      break;
+	    case "LISTENER_PRESSES_ENABLE":
+	      enableListenerPresses();
+	      break;
+	    case "LISTENER_PRESSES_DISABLE":
+	      disableListenerPresses();
 	      break;
 	  }
 	};
@@ -37083,13 +37106,16 @@
 	var $ = __webpack_require__(172);
 	var KeyActions = __webpack_require__(196);
 	var KEYMAP = __webpack_require__(169);
+	var KeyStore = __webpack_require__(171);
 	
 	var addHandlers = function (noteName) {
 	  var keyCode = KEYMAP[noteName];
 	
 	  var callbacks = {
 	    keyDown: function (e) {
-	      e.which === keyCode && KeyActions.keyDown(noteName);
+	      if (KeyStore.listenersCanPress() && e.which === keyCode) {
+	        KeyActions.keyDown(noteName);
+	      }
 	    },
 	    keyUp: function (e) {
 	      e.which === keyCode && KeyActions.keyUp(noteName);
@@ -37139,6 +37165,16 @@
 	      actionType: "KEYS_RESET",
 	      keysArray: keysArray
 	    });
+	  },
+	  listenerPressesDisable: function () {
+	    dispatcher.dispatch({
+	      actionType: "LISTENER_PRESSES_DISABLE"
+	    });
+	  },
+	  listenerPressesEnable: function () {
+	    dispatcher.dispatch({
+	      actionType: "LISTENER_PRESSES_ENABLE"
+	    });
 	  }
 	};
 
@@ -37172,7 +37208,7 @@
 	
 	Note.prototype = {
 	  start: function () {
-	    // can't explain 0.3, it is a reasonable value
+	    // can't explain 0.1, it is a reasonable value
 	    this.gainNode.gain.value = 0.1;
 	  },
 	
@@ -37235,12 +37271,12 @@
 	      { className: 'recorder' },
 	      React.createElement(
 	        'button',
-	        { onClick: this.handleClickRecord, className: 'recordBtn' },
+	        { onClick: this.handleClickRecord, className: 'record-btn' },
 	        recordText
 	      ),
 	      React.createElement(
 	        'button',
-	        { onClick: this.handleClickSave, className: 'saveBtn', disabled: !canSave },
+	        { onClick: this.handleClickSave, className: 'save-btn', disabled: !canSave },
 	        saveText
 	      ),
 	      trackPlayer
@@ -37416,7 +37452,9 @@
 	    };
 	  },
 	  componentDidMount: function () {
-	    this.props.Track.bindStopCallback(this.setStopped);
+	    if (typeof this.props.Track.bindStopCallback === "function") {
+	      this.props.Track.bindStopCallback(this.setStopped);
+	    }
 	  },
 	  render: function () {
 	    var playPauseText = this.state.isPlaying ? "Pause Playback" : "Play";
@@ -37485,13 +37523,13 @@
 
 	var React = __webpack_require__(162);
 	var TrackActions = __webpack_require__(201);
+	var KeyActions = __webpack_require__(196);
 	
 	var TrackName = React.createClass({
 	  displayName: 'TrackName',
 	
 	  getInitialState: function () {
 	    return {
-	      isInputFocused: false,
 	      name: "",
 	      isSaved: false
 	    };
@@ -37503,8 +37541,9 @@
 	    return React.createElement(
 	      'div',
 	      { className: 'track-name-container' },
-	      React.createElement('input', { ref: 'nameInput', onInput: this.onInput, type: 'text',
-	        className: 'track-name-input', value: this.state.name }),
+	      React.createElement('input', { ref: 'nameInput', onInput: this.onInput, onFocus: this.disableKeyListeners,
+	        type: 'text', className: 'track-name-input', onBlur: this.onBlur,
+	        value: this.state.name }),
 	      React.createElement(
 	        'span',
 	        { onClick: this.onClickName, className: trackNameDisplayClass },
@@ -37516,6 +37555,12 @@
 	        'Save Name'
 	      )
 	    );
+	  },
+	  disableKeyListeners: function (e) {
+	    KeyActions.listenerPressesDisable();
+	  },
+	  enableKeyListeners: function (e) {
+	    KeyActions.listenerPressesEnable();
 	  },
 	  onInput: function (e) {
 	    var newValue = this.refs.nameInput.value;
@@ -37535,10 +37580,121 @@
 	    this.props.Track.name = this.state.name;
 	
 	    this.setState({ isSaved: true });
+	  },
+	  componentWillUnmount: function () {
+	    this.enableKeyListeners();
 	  }
 	});
 	
 	module.exports = TrackName;
+
+/***/ },
+/* 204 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var React = __webpack_require__(162);
+	var ListenToMixin = __webpack_require__(194);
+	var TrackPlayer = __webpack_require__(202);
+	var TrackStore = __webpack_require__(205);
+	var Track = __webpack_require__(200);
+	
+	var Jukebox = React.createClass({
+	  displayName: 'Jukebox',
+	
+	  mixins: [ListenToMixin],
+	  getInitialState: function () {
+	    return {
+	      tracks: this.getAndGenerateTracks()
+	    };
+	  },
+	  _tracksChanged: function () {
+	    this.setState({ tracks: this.getAndGenerateTracks() });
+	  },
+	  componentDidMount: function () {
+	    this.listenTo(TrackStore, this._tracksChanged);
+	  },
+	  getAndGenerateTracks: function () {
+	    return TrackStore.getAllTracks().map(function (trackData) {
+	      return new Track(trackData.name, trackData.roll);
+	    });
+	  },
+	  generateTrackPlayers: function () {
+	    return this.state.tracks.map(function (track, i) {
+	      console.log(track);
+	      return React.createElement(TrackPlayer, { key: i, Track: track });
+	    });
+	  },
+	  render: function () {
+	    return React.createElement(
+	      'div',
+	      { className: 'jukebox' },
+	      this.generateTrackPlayers()
+	    );
+	  }
+	});
+	
+	module.exports = Jukebox;
+
+/***/ },
+/* 205 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var $ = __webpack_require__(172);
+	var Store = __webpack_require__(173).Store;
+	var Dispatcher = __webpack_require__(191);
+	
+	var TrackStore = new Store(Dispatcher);
+	
+	var tracks = {};
+	
+	var addTrack = function (track) {
+	  if (tracks[track.name]) {
+	    throw new Error('Invalid track. "' + track.name + '" already exists.');
+	    return;
+	  }
+	
+	  tracks[track.name] = track.roll;
+	  TrackStore.__emitChange();
+	};
+	
+	var removeTrack = function (trackName) {
+	  if (!tracks[trackName]) {
+	    throw new Error('Invalid track. "' + track.name + '" doesn\'t exist.');
+	    return;
+	  }
+	
+	  delete tracks[trackName];
+	  TrackStore.__emitChange();
+	};
+	
+	TrackStore.getTrack = function (trackName) {
+	  if (!tracks[trackName]) {
+	    throw new Error('Invalid track. "' + track.name + '" doesn\'t exist.');
+	    return false;
+	  }
+	
+	  return {
+	    name: trackName,
+	    roll: tracks[trackName].slice()
+	  };
+	};
+	
+	TrackStore.getAllTracks = function () {
+	  return Object.keys(tracks).map(this.getTrack);
+	};
+	
+	TrackStore.__onDispatch = function (payload) {
+	  switch (payload.actionType) {
+	    case "TRACK_ADD":
+	      addTrack(payload.track);
+	      break;
+	    case "TRACK_REMOVE":
+	      removeTrack(payload.trackName);
+	      break;
+	  }
+	};
+	
+	module.exports = TrackStore;
 
 /***/ }
 /******/ ]);

@@ -2,6 +2,7 @@ var React = require('react');
 var KEYMAP = require('../constants/KeyMap');
 var OrganKey = require('./OrganKey.jsx');
 var Recorder = require('./Recorder.jsx');
+var Jukebox = require('./Jukebox.jsx');
 
 
 var Organ = React.createClass({
@@ -21,6 +22,7 @@ var Organ = React.createClass({
           {this.generateKeys()}
         </ul>
         <Recorder />
+        <Jukebox />
       </div>
     )
   }

@@ -1,6 +1,7 @@
 var $ = require('jquery');
 var KeyActions = require('../actions/key_actions');
 var KEYMAP = require('../constants/KeyMap');
+var KeyStore = require('../stores/KeyStore');
 
 
 var addHandlers = function(noteName) {
@@ -8,7 +9,9 @@ var addHandlers = function(noteName) {
 
   var callbacks = {
     keyDown: function(e) {
-      e.which === keyCode && KeyActions.keyDown(noteName);
+      if (KeyStore.listenersCanPress() && e.which === keyCode) {
+       KeyActions.keyDown(noteName);
+      }
     },
     keyUp: function(e) {
       e.which === keyCode && KeyActions.keyUp(noteName);

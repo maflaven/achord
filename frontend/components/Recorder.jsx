@@ -26,10 +26,10 @@ var Recorder = React.createClass({
 
     return (
       <div className="recorder">
-        <button onClick={this.handleClickRecord} className="recordBtn">
+        <button onClick={this.handleClickRecord} className="record-btn">
           {recordText}
         </button>
-        <button onClick={this.handleClickSave} className="saveBtn" disabled={!canSave}>
+        <button onClick={this.handleClickSave} className="save-btn" disabled={!canSave}>
           {saveText}
         </button>
         {trackPlayer}

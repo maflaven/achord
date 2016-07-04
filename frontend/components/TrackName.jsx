@@ -1,14 +1,14 @@
 var React = require('react');
 var TrackActions = require('../actions/track_actions');
+var KeyActions = require('../actions/key_actions');
 
 
 var TrackName = React.createClass({
   getInitialState: function() {
     return {
-      isInputFocused: false,
       name: "",
       isSaved: false
-    }
+    };
   },
   render: function() {
     var trackNameDisplayClass = this.state.isInputFocused ?
@@ -17,8 +17,9 @@ var TrackName = React.createClass({
 
     return (
       <div className="track-name-container">
-        <input ref="nameInput" onInput={this.onInput} type="text"
-          className="track-name-input" value={this.state.name} />
+        <input ref="nameInput" onInput={this.onInput} onFocus={this.disableKeyListeners}
+          type="text" className="track-name-input" onBlur={this.onBlur}
+          value={this.state.name} />
 
         <span onClick={this.onClickName} className={trackNameDisplayClass}>
           {this.state.name}
@@ -29,6 +30,12 @@ var TrackName = React.createClass({
         </button>
       </div>
     );
+  },
+  disableKeyListeners: function(e) {
+    KeyActions.listenerPressesDisable();
+  },
+  enableKeyListeners: function(e) {
+    KeyActions.listenerPressesEnable()
   },
   onInput: function(e) {
     var newValue = this.refs.nameInput.value;
@@ -48,6 +55,9 @@ var TrackName = React.createClass({
     this.props.Track.name = this.state.name;
 
     this.setState({ isSaved: true });
+  },
+  componentWillUnmount: function() {
+    this.enableKeyListeners();
   }
 });
 

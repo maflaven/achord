@@ -39,7 +39,7 @@ TrackStore.getTrack = function(trackName) {
 
   return {
     name: trackName,
-    roll: $.extend({}, tracks[trackName])
+    roll: tracks[trackName].slice()
   };
 }
 
