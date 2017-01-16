@@ -38629,15 +38629,6 @@
 	  },
 	  render: function () {
 	    var recordText = this.state.isRecording ? "Stop Recording" : "Start Recording";
-	    var saveText = this.state.isTrackSaved ? "Saved" : "Save Track";
-	    var canSave = !this.state.isRecording && this.state.Track !== null;
-	
-	    var trackPlayer;
-	    if (this.state.Track !== null && !this.state.isRecording) {
-	      trackPlayer = React.createElement(TrackPlayer, { Track: this.state.Track,
-	        onTrackClear: this.onTrackClear,
-	        isTrackSaved: this.state.isTrackSaved });
-	    }
 	
 	    return React.createElement(
 	      'div',
@@ -38646,13 +38637,7 @@
 	        'button',
 	        { onClick: this.handleClickRecord, className: 'record-btn' },
 	        recordText
-	      ),
-	      React.createElement(
-	        'button',
-	        { onClick: this.handleClickSave, className: 'save-btn', disabled: !canSave },
-	        saveText
-	      ),
-	      trackPlayer
+	      )
 	    );
 	  },
 	  handleClickRecord: function () {
@@ -38680,17 +38665,10 @@
 	    this.state.Track.stopRecording();
 	
 	    this.listener.remove();
-	  },
-	  handleClickSave: function () {
+	
 	    TrackActions.addTrack(this.state.Track);
 	
-	    this.onTrackClear();
-	  },
-	  onTrackClear: function () {
-	    this.setState({
-	      Track: null,
-	      isTrackSaved: false
-	    });
+	    this.setState({ Track: null });
 	  }
 	});
 	
@@ -38919,19 +38897,20 @@
 	    };
 	  },
 	  render: function () {
-	    var trackNameDisplayClass = this.state.isInputFocused ? "hidden" : "track-name-display";
-	    var buttonClass = this.state.isSaved && this.state.name.length > 0 ? "hidden" : "save-name-btn";
+	    var trackNameDisplayClass = this.state.isInputFocused ? "hidden" : "track-name-display hidden";
+	
+	    var buttonClass = this.state.isSaved && this.state.name ? "hidden" : "save-name-btn hidden";
 	
 	    return React.createElement(
 	      'div',
 	      { className: 'track-name-container' },
 	      React.createElement('input', { ref: 'nameInput', onInput: this.onInput, onFocus: this.disableKeyListeners,
-	        type: 'text', className: 'track-name-input', onBlur: this.onBlur, hidden: !this.state.isInputFocused,
-	        value: this.state.name }),
+	        type: 'text', className: 'track-name-input', onBlur: this.enableKeyListeners,
+	        hidden: !this.state.isInputFocused, value: this.state.name }),
 	      React.createElement(
 	        'span',
 	        { onClick: this.onClickName, className: trackNameDisplayClass },
-	        this.state.name
+	        this.state.name ? this.state.name : "Click to change name"
 	      ),
 	      React.createElement(
 	        'button',
@@ -38966,7 +38945,12 @@
 	      name: this.state.name
 	    });
 	
-	    this.setState({ isSaved: true });
+	    this.props.Track.name = this.state.name;
+	
+	    this.setState({
+	      isSaved: true,
+	      isInputFocused: false
+	    });
 	  },
 	  componentWillUnmount: function () {
 	    this.enableKeyListeners();
@@ -39019,7 +39003,7 @@
 	    return false;
 	  }
 	
-	  tracks[options.id] = $.extend(options, tracks[options.id]);
+	  tracks[options.id] = $.extend(true, tracks[options.id], options);
 	
 	  TrackStore.__emitChange();
 	};

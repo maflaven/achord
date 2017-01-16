@@ -43,7 +43,7 @@ var updateTrack = function(options) {
     return false;
   }
 
-  tracks[options.id] = $.extend(options, tracks[options.id]);
+  tracks[options.id] = $.extend(true, tracks[options.id], options);
 
   TrackStore.__emitChange();
 };
