@@ -1,3 +1,4 @@
+var _ = require('underscore');
 var $ = require('jquery');
 var Store = require('flux/utils').Store;
 var Dispatcher = require('../dispatcher/dispatcher');
@@ -7,68 +8,74 @@ var TrackStore = new Store(Dispatcher);
 
 
 var tracks = {};
+var newTrackIndex = 0;
 
 
 var addTrack = function(track) {
-  if (TrackStore.hasTrack(track.name)) {
+  if ( TrackStore.hasTrack({ name: track.name }) ) {
     throw new Error('Invalid track. "' + track.name + '" already exists.');
     return;
   }
 
-  tracks[track.name] = track.roll;
+  track.id = newTrackIndex;
+  newTrackIndex++;
+  tracks[track.id] = track;
+
   TrackStore.__emitChange();
 };
 
 
-var removeTrack = function(trackName) {
-  if (!TrackStore.hasTrack(trackName)) {
-    throw new Error('Invalid track. "' + track.name + '" doesn\'t exist.');
-    return;
-  }
-
-  delete tracks[trackName];
-  TrackStore.__emitChange();
-};
-
-
-var updateTrackName = function(oldName, newName) {
-  if (!TrackStore.hasTrack(oldName)) {
-    throw new Error('Invalid track. "' + track.name + '" doesn\'t exist.');
+var removeTrack = function(trackId) {
+  if ( !TrackStore.hasTrackId(trackId) ) {
+    throw new Error('Invalid track. "' + trackId + '" doesn\'t exist.');
     return false;
   }
 
-  var track = {
-    nmme: newName,
-    roll: tracks[oldName].slice()
-  };
+  delete tracks[trackId];
 
-  delete tracks[oldName];
-
-  addTrack(track);
   TrackStore.__emitChange();
 };
 
 
-TrackStore.hasTrack = function(trackName) {
-  return tracks.hasOwnProperty(trackName);
-};
-
-
-TrackStore.getTrack = function(trackName) {
-  if (!TrackStore.hasTrack(trackName)) {
-    throw new Error('Invalid track. "' + track.name + '" doesn\'t exist.');
+var updateTrack = function(options) {
+  if ( !TrackStore.hasTrackId(options.id) ) {
+    throw new Error('Invalid track. ID "' + options.id + '" doesn\'t exist.');
     return false;
   }
 
-  return {
-    name: trackName,
-    roll: tracks[trackName].slice()
-  };
+  tracks[options.id] = $.extend(options, tracks[options.id]);
+
+  TrackStore.__emitChange();
+};
+
+
+TrackStore.hasTrack = function(track) {
+  return !!_.findWhere(tracks, track);
+};
+
+
+TrackStore.hasTrackId = function(trackId) {
+  return tracks.hasOwnProperty(trackId);
+};
+
+
+TrackStore.getTrack = function(trackId) {
+  if ( !TrackStore.hasTrackId(trackId) ) {
+    throw new Error('Invalid track. ID "' + options.id + '" doesn\'t exist.');
+    return false;
+  }
+
+  return $.extend(true, {}, tracks[trackId]);
 };
 
 
 TrackStore.getAllTracks = function() {
   return Object.keys(tracks).map(TrackStore.getTrack);
+};
+
+
+TrackStore.getNewId = function() {
+  return newTrackIndex > 0 ? newTrackIndex - 1 : undefined;
 };
 
 
@@ -78,10 +85,10 @@ TrackStore.__onDispatch = function(payload) {
       addTrack(payload.track);
       break;
     case "TRACK_REMOVE":
-      removeTrack(payload.trackName);
+      removeTrack(payload.trackId);
       break;
-    case "TRACK_NAME_UPDATE":
-      updateTrackName(payload.oldName, payload.newName);
+    case "TRACK_UPDATE":
+      updateTrack(payload.options);
       break;
   }
 };

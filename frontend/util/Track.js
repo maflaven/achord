@@ -2,10 +2,13 @@ var KeyStore = require('../stores/KeyStore');
 var KeyActions = require('../actions/key_actions');
 
 
-var Track = function(name, roll, onStopPlayback) {
-  this.name = name;
-  this.roll = roll;
-  this.onStopPlayback = onStopPlayback;
+var Track = function(options) {
+  if (options) {
+    this.id = options.id;
+    this.name = options.name;
+    this.roll = options.roll;
+    this.onStopPlayback = options.onStopPlayback;
+  }
 };
 
 

@@ -19,13 +19,12 @@ var Recorder = React.createClass({
   render: function() {
     var recordText = this.state.isRecording ? "Stop Recording" : "Start Recording";
     var saveText = this.state.isTrackSaved ? "Saved" : "Save Track";
-    var canSave = !this.state.isRecording && this.state.Track !== null
-      && !this.state.isTrackSaved;
+    var canSave = !this.state.isRecording && this.state.Track !== null;
 
     var trackPlayer;
     if (this.state.Track !== null && !this.state.isRecording) {
       trackPlayer = <TrackPlayer Track={this.state.Track}
-        onTrackDelete={this.onTrackDelete}
+        onTrackClear={this.onTrackClear}
         isTrackSaved={this.state.isTrackSaved} />;
     }
 
@@ -49,7 +48,7 @@ var Recorder = React.createClass({
     }
   },
   onRecord: function() {
-    var track = new Track(null, null, this.setStopped);
+    var track = new Track();
 
     track.startRecording();
 
@@ -70,9 +69,9 @@ var Recorder = React.createClass({
   handleClickSave: function() {
     TrackActions.addTrack(this.state.Track);
 
-    this.setState({ isTrackSaved: true });
+    this.onTrackClear();
   },
-  onTrackDelete: function() {
+  onTrackClear: function() {
     this.setState({
       Track: null,
       isTrackSaved: false

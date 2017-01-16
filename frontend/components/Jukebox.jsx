@@ -9,19 +9,14 @@ var Jukebox = React.createClass({
   mixins: [ListenToMixin],
   getInitialState: function() {
     return {
-      tracks: this.getAndGenerateTracks()
+      tracks: TrackStore.getAllTracks()
     };
   },
   _tracksChanged: function() {
-    this.setState({ tracks: this.getAndGenerateTracks() });
+    this.setState({ tracks: TrackStore.getAllTracks() });
   },
   componentDidMount: function() {
     this.listenTo(TrackStore, this._tracksChanged);
-  },
-  getAndGenerateTracks: function() {
-    return TrackStore.getAllTracks().map( function(trackData) {
-      return new Track(trackData.name, trackData.roll);
-    });
   },
   generateTrackPlayers: function() {
     return this.state.tracks.map( function(track, i) {

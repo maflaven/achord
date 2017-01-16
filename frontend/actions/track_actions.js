@@ -7,17 +7,16 @@ module.exports = {
       track: track
     });
   },
-  removeTrack: function(trackName) {
+  removeTrack: function(trackId) {
     dispatcher.dispatch({
       actionType: "TRACK_REMOVE",
-      trackName: trackName
+      trackId: trackId
     });
   },
-  updateTrackName: function(oldName, newName) {
+  updateTrack: function(options) {
     dispatcher.dispatch({
-      actionType: "TRACK_NAME_UPDATE",
-      oldName: oldName,
-      newName: newName
+      actionType: "TRACK_UPDATE",
+      options: options
     });
   }
 };

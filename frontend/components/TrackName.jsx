@@ -54,7 +54,10 @@ var TrackName = React.createClass({
   onClickSave: function() {
     if (this.state.isSaved) return;
 
-    TrackActions.updateTrackName(this.props.Track.name, this.state.name);
+    TrackActions.updateTrack({
+      id: this.props.Track.id,
+      name: this.state.name
+    });
 
     this.setState({ isSaved: true });
   },
