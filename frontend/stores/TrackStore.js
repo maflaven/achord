@@ -27,7 +27,7 @@ var addTrack = function(track) {
 
 var removeTrack = function(trackId) {
   if ( !TrackStore.hasTrackId(trackId) ) {
-    throw new Error('Invalid track. "' + trackId + '" doesn\'t exist.');
+    throw new Error('Invalid track. ID "' + trackId + '" doesn\'t exist.');
     return false;
   }
 
