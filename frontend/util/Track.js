@@ -7,7 +7,6 @@ var Track = function(options) {
     this.id = options.id;
     this.name = options.name;
     this.roll = options.roll;
-    this.onStopPlayback = options.onStopPlayback;
   }
 };
 

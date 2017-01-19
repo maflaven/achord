@@ -75,7 +75,7 @@ TrackStore.getAllTracks = function() {
 
 
 TrackStore.getNewId = function() {
-  return newTrackIndex > 0 ? newTrackIndex - 1 : undefined;
+  return newTrackIndex > 0 ? newTrackIndex - 1 : null;
 };
 
 

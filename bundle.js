@@ -21689,7 +21689,7 @@
 	var KEYMAP = __webpack_require__(183);
 	var OrganKey = __webpack_require__(184);
 	var Recorder = __webpack_require__(213);
-	var Jukebox = __webpack_require__(219);
+	var Jukebox = __webpack_require__(220);
 	
 	var Organ = React.createClass({
 	  displayName: 'Organ',
@@ -38686,7 +38686,6 @@
 	    this.id = options.id;
 	    this.name = options.name;
 	    this.roll = options.roll;
-	    this.onStopPlayback = options.onStopPlayback;
 	  }
 	};
 	
@@ -38812,9 +38811,12 @@
 	    };
 	  },
 	  componentDidMount: function () {
-	    if (typeof this.props.Track.bindStopCallback === "function") {
-	      this.props.Track.bindStopCallback(this.setStopped);
-	    }
+	    this.props.Track.bindStopCallback(this.setStopped);
+	  },
+	  componentDidUpdate: function () {
+	    // necessary to re-bind even though this.props.Track changes
+	    // might be ripe to refactor
+	    this.props.Track.bindStopCallback(this.setStopped);
 	  },
 	  render: function () {
 	    var playPauseText = this.state.isPlaying ? "Pause Playback" : "Play";
@@ -38896,6 +38898,17 @@
 	      isInputFocused: false
 	    };
 	  },
+	  componentDidMount: function () {
+	    this._focusInput();
+	  },
+	  componentDidUpdate: function () {
+	    this._focusInput();
+	  },
+	  _focusInput: function () {
+	    if (this.state.isInputFocused) {
+	      this.refs.nameInput.focus();
+	    }
+	  },
 	  render: function () {
 	    var trackNameDisplayClass = this.state.isInputFocused ? "hidden" : "track-name-display hidden";
 	
@@ -38938,8 +38951,6 @@
 	    this.setState({ isInputFocused: true });
 	  },
 	  onClickSave: function () {
-	    if (this.state.isSaved) return;
-	
 	    TrackActions.updateTrack({
 	      id: this.props.Track.id,
 	      name: this.state.name
@@ -38963,7 +38974,7 @@
 /* 218 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var _ = __webpack_require__(220);
+	var _ = __webpack_require__(219);
 	var $ = __webpack_require__(186);
 	var Store = __webpack_require__(187).Store;
 	var Dispatcher = __webpack_require__(205);
@@ -39030,7 +39041,7 @@
 	};
 	
 	TrackStore.getNewId = function () {
-	  return newTrackIndex > 0 ? newTrackIndex - 1 : undefined;
+	  return newTrackIndex > 0 ? newTrackIndex - 1 : null;
 	};
 	
 	TrackStore.__onDispatch = function (payload) {
@@ -39051,48 +39062,6 @@
 
 /***/ },
 /* 219 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var React = __webpack_require__(181);
-	var ListenToMixin = __webpack_require__(208);
-	var TrackPlayer = __webpack_require__(216);
-	var TrackStore = __webpack_require__(218);
-	var Track = __webpack_require__(214);
-	
-	var Jukebox = React.createClass({
-	  displayName: 'Jukebox',
-	
-	  mixins: [ListenToMixin],
-	  getInitialState: function () {
-	    return {
-	      tracks: TrackStore.getAllTracks()
-	    };
-	  },
-	  _tracksChanged: function () {
-	    this.setState({ tracks: TrackStore.getAllTracks() });
-	  },
-	  componentDidMount: function () {
-	    this.listenTo(TrackStore, this._tracksChanged);
-	  },
-	  generateTrackPlayers: function () {
-	    return this.state.tracks.map(function (track, i) {
-	      console.log(track);
-	      return React.createElement(TrackPlayer, { key: i, Track: track, isTrackSaved: 'true' });
-	    });
-	  },
-	  render: function () {
-	    return React.createElement(
-	      'div',
-	      { className: 'jukebox' },
-	      this.generateTrackPlayers()
-	    );
-	  }
-	});
-	
-	module.exports = Jukebox;
-
-/***/ },
-/* 220 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;//     Underscore.js 1.8.3
@@ -40644,6 +40613,48 @@
 	  }
 	}.call(this));
 
+
+/***/ },
+/* 220 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var React = __webpack_require__(181);
+	var ListenToMixin = __webpack_require__(208);
+	var TrackPlayer = __webpack_require__(216);
+	var TrackStore = __webpack_require__(218);
+	var Track = __webpack_require__(214);
+	
+	var Jukebox = React.createClass({
+	  displayName: 'Jukebox',
+	
+	  mixins: [ListenToMixin],
+	  getInitialState: function () {
+	    return {
+	      tracks: TrackStore.getAllTracks()
+	    };
+	  },
+	  _tracksChanged: function () {
+	    this.setState({ tracks: TrackStore.getAllTracks() });
+	  },
+	  componentDidMount: function () {
+	    this.listenTo(TrackStore, this._tracksChanged);
+	  },
+	  generateTrackPlayers: function () {
+	    return this.state.tracks.map(function (track, i) {
+	      console.log(track);
+	      return React.createElement(TrackPlayer, { key: i, Track: track, isTrackSaved: 'true' });
+	    });
+	  },
+	  render: function () {
+	    return React.createElement(
+	      'div',
+	      { className: 'jukebox' },
+	      this.generateTrackPlayers()
+	    );
+	  }
+	});
+	
+	module.exports = Jukebox;
 
 /***/ }
 /******/ ]);

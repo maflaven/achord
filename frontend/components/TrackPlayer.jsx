@@ -11,9 +11,12 @@ var TrackPlayer = React.createClass({
     };
   },
   componentDidMount: function() {
-    if (typeof this.props.Track.bindStopCallback === "function") {
-      this.props.Track.bindStopCallback(this.setStopped);
-    }
+    this.props.Track.bindStopCallback(this.setStopped);
+  },
+  componentDidUpdate: function() {
+    // necessary to re-bind even though this.props.Track changes
+    // might be ripe to refactor
+    this.props.Track.bindStopCallback(this.setStopped);
   },
   render: function() {
     var playPauseText = this.state.isPlaying ? "Pause Playback" : "Play";

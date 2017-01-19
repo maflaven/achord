@@ -11,6 +11,17 @@ var TrackName = React.createClass({
       isInputFocused: false
     };
   },
+  componentDidMount: function() {
+    this._focusInput();
+  },
+  componentDidUpdate: function() {
+    this._focusInput();
+  },
+  _focusInput: function() {
+    if (this.state.isInputFocused) {
+      this.refs.nameInput.focus();
+    }
+  },
   render: function() {
     var trackNameDisplayClass = this.state.isInputFocused ?
       "hidden" : "track-name-display hidden";
@@ -53,8 +64,6 @@ var TrackName = React.createClass({
     this.setState({ isInputFocused: true });
   },
   onClickSave: function() {
-    if (this.state.isSaved) return;
-
     TrackActions.updateTrack({
       id: this.props.Track.id,
       name: this.state.name
