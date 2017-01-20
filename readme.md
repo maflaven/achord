@@ -1,3 +1,8 @@
+# Table of Contents
+- [Components](#components)
+- [Stores](#stores)
+- [Utilities](#utilities)
+
 # Components
 
 ## Organ
@@ -66,3 +71,6 @@
   - pause
   - stop
   - bindStopCallback
+
+# Known Issues
+- starting then stopping recording during track playback causes the playing track's stop method to be unresponsive until after the track is finished playing
