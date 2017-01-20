@@ -39014,6 +39014,11 @@
 	    return false;
 	  }
 	
+	  if (options.name && TrackStore.hasTrack({ name: options.name })) {
+	    throw new Error('Invalid track. "' + options.name + '" already exists.');
+	    return;
+	  }
+	
 	  tracks[options.id] = $.extend(true, tracks[options.id], options);
 	
 	  TrackStore.__emitChange();
