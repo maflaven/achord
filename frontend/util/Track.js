@@ -36,6 +36,10 @@ Track.prototype = {
       if (playBackCurrentTime >= currentKeyChange.timeSlice) {
         KeyActions.keysReset(currentKeyChange.notes);
         this.currentIndex++;
+
+        for (var i = 0; i < this.intervalCallbacks.length; i++) {
+          this.intervalCallbacks[i]();
+        }
       }
 
     } else {
@@ -82,7 +86,18 @@ Track.prototype = {
     if (typeof callback === 'function') {
       this.stopCallback = callback;
     } else {
-      throw "Invalid callback.";
+      throw "Invalid callback";
+    }
+  },
+  bindIntervalCallback: function(callback) {
+    if (!this.intervalCallbacks) {
+      this.intervalCallbacks = [];
+    }
+
+    if (typeof callback === 'function') {
+      this.intervalCallbacks.push(callback);
+    } else {
+      throw "Invalid callback";
     }
   }
 }

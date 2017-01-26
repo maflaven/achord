@@ -21689,7 +21689,7 @@
 	var KEYMAP = __webpack_require__(183);
 	var OrganKey = __webpack_require__(184);
 	var Recorder = __webpack_require__(213);
-	var Jukebox = __webpack_require__(220);
+	var Jukebox = __webpack_require__(221);
 	
 	var Organ = React.createClass({
 	  displayName: 'Organ',
@@ -38614,7 +38614,7 @@
 	var Track = __webpack_require__(214);
 	var TrackActions = __webpack_require__(215);
 	var TrackPlayer = __webpack_require__(216);
-	var TrackStore = __webpack_require__(218);
+	var TrackStore = __webpack_require__(219);
 	
 	var Recorder = React.createClass({
 	  displayName: 'Recorder',
@@ -38714,6 +38714,10 @@
 	      if (playBackCurrentTime >= currentKeyChange.timeSlice) {
 	        KeyActions.keysReset(currentKeyChange.notes);
 	        this.currentIndex++;
+	
+	        for (var i = 0; i < this.intervalCallbacks.length; i++) {
+	          this.intervalCallbacks[i]();
+	        }
 	      }
 	    } else {
 	      this.stop();
@@ -38759,7 +38763,18 @@
 	    if (typeof callback === 'function') {
 	      this.stopCallback = callback;
 	    } else {
-	      throw "Invalid callback.";
+	      throw "Invalid callback";
+	    }
+	  },
+	  bindIntervalCallback: function (callback) {
+	    if (!this.intervalCallbacks) {
+	      this.intervalCallbacks = [];
+	    }
+	
+	    if (typeof callback === 'function') {
+	      this.intervalCallbacks.push(callback);
+	    } else {
+	      throw "Invalid callback";
 	    }
 	  }
 	};
@@ -38800,6 +38815,7 @@
 	var React = __webpack_require__(181);
 	var TrackActions = __webpack_require__(215);
 	var TrackName = __webpack_require__(217);
+	var TrackSlider = __webpack_require__(218);
 	
 	var TrackPlayer = React.createClass({
 	  displayName: 'TrackPlayer',
@@ -38841,7 +38857,8 @@
 	          disabled: !this.props.isTrackSaved },
 	        'Delete'
 	      ),
-	      React.createElement(TrackName, { Track: this.props.Track })
+	      React.createElement(TrackName, { Track: this.props.Track }),
+	      React.createElement(TrackSlider, { Track: this.props.Track })
 	    );
 	  },
 	  handleClickPlayPause: function () {
@@ -38974,7 +38991,32 @@
 /* 218 */
 /***/ function(module, exports, __webpack_require__) {
 
-	var _ = __webpack_require__(219);
+	var React = __webpack_require__(181);
+	
+	var TrackSlider = React.createClass({
+	  displayName: "TrackSlider",
+	
+	  getInitialState: function () {
+	    return {
+	      value: 0
+	    };
+	  },
+	  componentDidMount: function () {},
+	  handleChange: function (event) {
+	    this.setState({ value: event.target.value });
+	  },
+	  render: function () {
+	    return React.createElement("input", { type: "range", value: this.state.value, onChange: this.handleChange });
+	  }
+	});
+	
+	module.exports = TrackSlider;
+
+/***/ },
+/* 219 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var _ = __webpack_require__(220);
 	var $ = __webpack_require__(186);
 	var Store = __webpack_require__(187).Store;
 	var Dispatcher = __webpack_require__(205);
@@ -39066,7 +39108,7 @@
 	module.exports = TrackStore;
 
 /***/ },
-/* 219 */
+/* 220 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;//     Underscore.js 1.8.3
@@ -40620,13 +40662,13 @@
 
 
 /***/ },
-/* 220 */
+/* 221 */
 /***/ function(module, exports, __webpack_require__) {
 
 	var React = __webpack_require__(181);
 	var ListenToMixin = __webpack_require__(208);
 	var TrackPlayer = __webpack_require__(216);
-	var TrackStore = __webpack_require__(218);
+	var TrackStore = __webpack_require__(219);
 	var Track = __webpack_require__(214);
 	
 	var Jukebox = React.createClass({

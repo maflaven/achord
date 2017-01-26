@@ -1,6 +1,7 @@
 var React = require('react');
 var TrackActions = require('../actions/track_actions');
 var TrackName = require('./TrackName');
+var TrackSlider = require('./TrackSlider');
 
 
 var TrackPlayer = React.createClass({
@@ -38,6 +39,8 @@ var TrackPlayer = React.createClass({
         </button>
 
         <TrackName Track={this.props.Track} />
+
+        <TrackSlider Track={this.props.Track} />
       </div>
     )
   },
