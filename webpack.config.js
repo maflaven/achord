@@ -2,7 +2,7 @@ module.exports = {
   context: __dirname,
   entry: "./frontend/OrganGrinder.jsx",
   output: {
-    path: "./",
+    path: "./achord/app/assets/javascripts",
     filename: "bundle.js"
   },
   module: {
