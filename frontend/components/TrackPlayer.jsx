@@ -72,6 +72,8 @@ var TrackPlayer = React.createClass({
     });
   },
   handleClickDelete: function() {
+    this.handleClickStop();
+
     TrackActions.removeTrack(this.props.Track.id);
 
     (typeof this.props.onTrackDelete === 'function') && this.props.onTrackDelete();

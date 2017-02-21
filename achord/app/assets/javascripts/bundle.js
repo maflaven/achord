@@ -38687,6 +38687,8 @@
 	    this.name = options.name;
 	    this.roll = options.roll;
 	  }
+	
+	  this.intervalCallbacks = [];
 	};
 	
 	Track.prototype = {
@@ -38767,10 +38769,6 @@
 	    }
 	  },
 	  bindIntervalCallback: function (callback) {
-	    if (!this.intervalCallbacks) {
-	      this.intervalCallbacks = [];
-	    }
-	
 	    if (typeof callback === 'function') {
 	      this.intervalCallbacks.push(callback);
 	    } else {
@@ -38889,6 +38887,8 @@
 	    });
 	  },
 	  handleClickDelete: function () {
+	    this.handleClickStop();
+	
 	    TrackActions.removeTrack(this.props.Track.id);
 	
 	    typeof this.props.onTrackDelete === 'function' && this.props.onTrackDelete();

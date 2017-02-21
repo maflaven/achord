@@ -8,6 +8,8 @@ var Track = function(options) {
     this.name = options.name;
     this.roll = options.roll;
   }
+
+  this.intervalCallbacks = [];
 };
 
 
@@ -90,10 +92,6 @@ Track.prototype = {
     }
   },
   bindIntervalCallback: function(callback) {
-    if (!this.intervalCallbacks) {
-      this.intervalCallbacks = [];
-    }
-
     if (typeof callback === 'function') {
       this.intervalCallbacks.push(callback);
     } else {
